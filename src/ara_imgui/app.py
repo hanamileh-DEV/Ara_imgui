@@ -5,6 +5,7 @@ import glfw
 import imgui
 from imgui.integrations.glfw import GlfwRenderer  # GLFW integration for ImGui
 from .theme import apply_theme
+from .window import Window
 
 class App:
     def __init__(self, title="New app", width=800, height=600):
@@ -31,6 +32,9 @@ class App:
         # Initialize ImGui context and GLFW renderer
         imgui.create_context()
         self.renderer = GlfwRenderer(self.window)
+        
+        # ImGui windows
+        self.windows = set()
 
         # Callbacks for frame updates and UI rendering
         self.frame_callback = None  # Called each frame for app logic
@@ -76,6 +80,15 @@ class App:
         self.renderer.refresh_font_texture()
 
 
+    def add_window(self, window: Window):
+        window.should_close = False
+        if window not in self.windows:
+            self.windows.add(window)
+            return True
+        else:
+            return False
+
+
     def run(self):
         """Executing the main application loop"""
         while not glfw.window_should_close(self.window):
@@ -104,6 +117,12 @@ class App:
                 self.frame_ui()
             
             imgui.end()
+
+            # Drawing ImGui windows
+            self.windows = set([window for window in self.windows if not window.should_close])
+
+            for window in self.windows:
+                window.draw()
 
             # Call frame update callback if set
             if self.frame_callback:
