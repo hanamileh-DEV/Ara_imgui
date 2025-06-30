@@ -1,3 +1,6 @@
+import os
+import sys
+from pathlib import Path
 import glfw
 import imgui
 from imgui.integrations.glfw import GlfwRenderer  # GLFW integration for ImGui
@@ -44,6 +47,35 @@ class App:
         self.frame_ui = ui
 
     
+    def load_font(self, font_path=None, font_size=14, cyrillic_ranges=False):
+        # Loading default font
+        if font_path is None:
+            if sys.platform == "win32":
+                font_path = Path("C:/Windows/Fonts/segoeui.ttf")
+            elif sys.platform == "darwin":
+                font_path = Path("/System/Library/Fonts/SFNSDisplay.ttf")
+            elif sys.platform == "linux":
+                font_path = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
+            else:
+                raise Exception(f"Unsupported platform {sys.platform}")
+
+        # Check if font file exists
+        if not os.path.exists(font_path):
+            raise Exception(f"Font file {font_path} does not exist")
+
+        # Loading font
+        io = imgui.get_io()
+
+        glyph_ranges = io.fonts.get_glyph_ranges_default()
+
+        if cyrillic_ranges:
+            glyph_ranges = io.fonts.get_glyph_ranges_cyrillic()
+
+        io.fonts.clear()
+        io.fonts.add_font_from_file_ttf(str(font_path), font_size, None, glyph_ranges)
+        self.renderer.refresh_font_texture()
+
+
     def run(self):
         """Executing the main application loop"""
         while not glfw.window_should_close(self.window):
