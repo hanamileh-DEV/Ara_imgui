@@ -1,0 +1,19 @@
+[project]
+name = "Ara_imgui"
+version = "0.1.0"
+description = "A simplified wrapper for Dear ImGui and GLFW"
+readme = "README.md"
+authors = [{ name = "HanamileH", email = "hanamileh@gmail.com" }]
+license = "MIT"
+
+dependencies = [
+   "glfw>=2.8.0",
+   "imgui==2.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/hanamileh-DEV/Ara_imgui"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
