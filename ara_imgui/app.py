@@ -1,6 +1,7 @@
 import glfw
 import imgui
 from imgui.integrations.glfw import GlfwRenderer  # GLFW integration for ImGui
+from .theme import apply_theme
 
 class App:
     def __init__(self, title="New app", width=800, height=600):
@@ -86,9 +87,10 @@ class App:
         glfw.terminate()
 
     
-def run(frame_ui, frame_callback=None, title="New app", width=800, height=600):
+def run(frame_ui, frame_callback=None, title="New app", width=800, height=600, theme="dark"):
     """A minimalistic, easy-to-use function for creating and running an app"""
     app = App(title, width, height)
+    apply_theme(theme)
     app.set_frame_ui(frame_ui)
     app.set_frame_callback(frame_callback)
     app.run()
