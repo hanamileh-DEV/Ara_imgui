@@ -36,20 +36,6 @@ class App:
         # ImGui windows
         self.windows = set()
 
-        # Callbacks for frame updates and UI rendering
-        self.frame_callback = None  # Called each frame for app logic
-        self.frame_ui = None        # Called each frame for UI rendering
-
-    
-    def set_frame_callback(self, callback):
-        """Set the callback function for frame updates"""
-        self.frame_callback = callback
-
-    
-    def set_frame_ui(self, ui):
-        """Set the callback function for UI rendering"""
-        self.frame_ui = ui
-
     
     def load_font(self, font_path=None, font_size=14, cyrillic_ranges=False):
         # Loading default font
@@ -89,8 +75,9 @@ class App:
             return False
 
 
-    def run(self):
+    def run(self, frame_ui = None, callback = None):
         """Executing the main application loop"""
+
         while not glfw.window_should_close(self.window):
             # Process events and inputs
             glfw.poll_events()
@@ -113,8 +100,8 @@ class App:
             )
             
             # Call UI rendering callback if set
-            if self.frame_ui:
-                self.frame_ui()
+            if frame_ui:
+                frame_ui()
             
             imgui.end()
 
@@ -125,8 +112,8 @@ class App:
                 window.draw()
 
             # Call frame update callback if set
-            if self.frame_callback:
-                self.frame_callback()
+            if callback:
+                callback()
 
             # Render ImGui and swap buffers
             imgui.render()
@@ -138,10 +125,8 @@ class App:
         glfw.terminate()
 
     
-def run(frame_ui, frame_callback=None, title="New app", width=800, height=600, theme="dark"):
+def run(frame_ui, callback=None, title="New app", width=800, height=600, theme="dark"):
     """A minimalistic, easy-to-use function for creating and running an app"""
     app = App(title, width, height)
     apply_theme(theme)
-    app.set_frame_ui(frame_ui)
-    app.set_frame_callback(frame_callback)
-    app.run()
+    app.run(frame_ui, callback)

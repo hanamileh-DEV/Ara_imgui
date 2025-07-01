@@ -30,5 +30,4 @@ def gui_main():
         app.add_window(win_2)
 
 
-app.set_frame_ui(gui_main)
-app.run()
+app.run(gui_main)

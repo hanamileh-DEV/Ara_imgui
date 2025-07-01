@@ -11,5 +11,5 @@ def gui():
 
    imgui.text(f"Hello, {name if len(name) > 0 else "Unknown"}!")
 
-app.set_frame_ui(gui)
-app.run()
+
+app.run(gui)

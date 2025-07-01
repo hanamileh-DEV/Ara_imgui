@@ -21,5 +21,4 @@ def gui():
 
 apply_theme("light")
 app.load_font(font_size=20, cyrillic_ranges=True)
-app.set_frame_ui(gui)
-app.run()
+app.run(gui)
