@@ -13,6 +13,7 @@ class Window:
     def set_frame_ui(self, frame_ui):
         self.frame_ui = frame_ui
     
+    
     def draw(self):
         _, is_opened = imgui.begin(f"{self.name}##{self._internal_id}", True, flags = self.flags)
 
