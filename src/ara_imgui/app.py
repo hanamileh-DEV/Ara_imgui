@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+import inspect
 import glfw
 import imgui
 from imgui.integrations.glfw import GlfwRenderer  # GLFW integration for ImGui
@@ -109,7 +110,13 @@ class App:
             
             # Call UI rendering callback if set
             if frame_ui:
-                frame_ui()
+                sig = inspect.signature(frame_ui)
+                if len(sig.parameters) == 0:
+                    frame_ui()
+                elif len(sig.parameters) == 1:
+                    frame_ui(self)
+                else:
+                    raise TypeError(f"frame_ui function must take 0 or 1 arguments, but {len(sig.parameters)} were given")
             
             imgui.end()
 
@@ -121,7 +128,13 @@ class App:
 
             # Call frame update callback if set
             if callback:
-                callback()
+                sig = inspect.signature(callback)
+                if len(sig.parameters) == 0:
+                    callback()
+                elif len(sig.parameters) == 1:
+                    callback(self)
+                else:
+                    raise TypeError(f"callback function must take 0 or 1 arguments, but {len(sig.parameters)} were given")
 
             # Render ImGui and swap buffers
             imgui.render()
