@@ -19,6 +19,6 @@ def gui():
    imgui.text("cillum dolore eu fugiat nulla pariatur.")
 
 
-apply_theme("light")
+app.apply_theme("light")
 app.load_font(font_size=20, cyrillic_ranges=True)
 app.run(gui)

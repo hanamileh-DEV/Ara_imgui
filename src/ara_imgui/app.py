@@ -4,7 +4,6 @@ from pathlib import Path
 import glfw
 import imgui
 from imgui.integrations.glfw import GlfwRenderer  # GLFW integration for ImGui
-from .theme import apply_theme
 from .window import Window
 
 class App:
@@ -64,6 +63,15 @@ class App:
         io.fonts.clear()
         io.fonts.add_font_from_file_ttf(str(font_path), font_size, None, glyph_ranges)
         self.renderer.refresh_font_texture()
+
+
+    def apply_theme(self, name: str):
+        if name == "dark":
+            imgui.style_colors_dark()
+        elif name == "light":
+            imgui.style_colors_light()
+        else:
+            raise ValueError(f"Unknown theme name: {name}")
 
 
     def add_window(self, window: Window):
@@ -128,5 +136,5 @@ class App:
 def run(frame_ui, callback=None, title="New app", width=800, height=600, theme="dark"):
     """A minimalistic, easy-to-use function for creating and running an app"""
     app = App(title, width, height)
-    apply_theme(theme)
+    app.apply_theme(theme)
     app.run(frame_ui, callback)
