@@ -1,4 +1,4 @@
-from ara_imgui import App, imgui, apply_theme
+from ara_imgui import App, imgui
 
 app = App("Custom font example")
 
@@ -20,5 +20,5 @@ def gui():
 
 
 app.apply_theme("light")
-app.load_font(font_size=20, cyrillic_ranges=True)
+app.load_font(font_size=20)
 app.run(gui)

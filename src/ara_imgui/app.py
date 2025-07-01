@@ -36,7 +36,7 @@ class App:
         self.windows = set()
 
     
-    def load_font(self, font_path=None, font_size=14, cyrillic_ranges=False):
+    def load_font(self, font_path=None, font_size=14, cyrillic_ranges=True):
         # Loading default font
         if font_path is None:
             if sys.platform == "win32":
