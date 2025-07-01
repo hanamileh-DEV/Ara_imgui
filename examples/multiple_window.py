@@ -6,6 +6,8 @@ def gui_1():
     imgui.button("Button")
 
 win_1 = Window("Window 1", frame_ui=gui_1)
+win_1.set_pos(50, 50)
+win_1.set_size(300, 250)
 
 
 # Second ImGui window
@@ -14,6 +16,7 @@ def gui_2(window):
     _, window.val = imgui.slider_int("Slider", window.val, 0, 100)
 
 win_2 = Window("Window 2", frame_ui=gui_2)
+win_2.set_pos(80, 60)
 win_2.val = 50
 
 
