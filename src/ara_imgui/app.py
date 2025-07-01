@@ -8,7 +8,26 @@ from imgui.integrations.glfw import GlfwRenderer  # GLFW integration for ImGui
 from .window import Window
 
 class App:
+    """
+    A class representing an ImGui application.
+
+    Attributes:
+        title (str): The title of the application window.
+        width (int): The width of the application window.
+        height (int): The height of the application window.
+        window (GLFWwindow): The GLFW window object.
+        renderer (GlfwRenderer): The ImGui GLFW renderer.
+        windows (set): A set of Window instances.
+    """
     def __init__(self, title="New app", width=800, height=600):
+        """
+        Initializes the App instance.
+
+        Args:
+            title (str, optional): The title of the application window. Defaults to "New app".
+            width (int, optional): The width of the application window. Defaults to 800.
+            height (int, optional): The height of the application window. Defaults to 600.
+        """
         # Initialize GLFW
         if not glfw.init():
             raise Exception("Failed to initialize GLFW")
@@ -38,6 +57,14 @@ class App:
 
     
     def load_font(self, font_path=None, font_size=14, cyrillic_ranges=True):
+        """
+        Loads a font for the application.
+
+        Args:
+            font_path (str, optional): The path to the font file. Defaults to None, which loads the default font.
+            font_size (int, optional): The size of the font. Defaults to 14.
+            cyrillic_ranges (bool, optional): Whether to include Cyrillic character ranges. Defaults to True.
+        """
         # Loading default font
         if font_path is None:
             if sys.platform == "win32":
@@ -67,15 +94,30 @@ class App:
 
 
     def apply_theme(self, name: str):
+        """
+        Applies a theme to the application.
+
+        Args:
+            name (str): The name of the theme ("dark" or "light").
+        """
         if name == "dark":
             imgui.style_colors_dark()
         elif name == "light":
             imgui.style_colors_light()
         else:
-            raise ValueError(f"Unknown theme name: {name}")
+            raise ValueError(f"Unknown theme name: {name}. Available themes: 'dark', 'light'")
 
 
     def add_window(self, window: Window):
+        """
+        Adds a window to the application.
+
+        Args:
+            window (Window): The Window instance to add.
+
+        Returns:
+            bool: True if the window was added, False if it was already present.
+        """
         window.should_close = False
         if window not in self.windows:
             self.windows.add(window)
@@ -85,7 +127,13 @@ class App:
 
 
     def run(self, frame_ui = None, callback = None):
-        """Executing the main application loop"""
+        """
+        Executes the main application loop.
+
+        Args:
+            frame_ui (function, optional): The function to draw the main UI. Defaults to None.
+            callback (function, optional): The function to call after drawing the UI. Defaults to None.
+        """
 
         while not glfw.window_should_close(self.window):
             # Process events and inputs
@@ -157,7 +205,20 @@ def run(
         font_size=14,
         cyrillic_ranges=True
     ):
-    """A minimalistic, easy-to-use function for creating and running an app"""
+    """
+    A minimalistic, easy-to-use function for creating and running an app.
+
+    Args:
+        frame_ui (function): The function to draw the main UI.
+        callback (function, optional): The function to call after drawing the UI. Defaults to None.
+        title (str, optional): The title of the application window. Defaults to "New app".
+        width (int, optional): The width of the application window. Defaults to 800.
+        height (int, optional): The height of the application window. Defaults to 600.
+        theme (str, optional): The name of the theme ("dark" or "light"). Defaults to "dark".
+        custom_font (bool or str, optional): The path to a custom font or True to use the default font or False to use build-in ImGui font. Defaults to False.
+        font_size (int, optional): The size of the font. Defaults to 14.
+        cyrillic_ranges (bool, optional): Whether to include Cyrillic character ranges. Defaults to True.
+    """
 
     app = App(title, width, height)
 
