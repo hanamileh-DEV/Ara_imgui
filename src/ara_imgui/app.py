@@ -133,8 +133,25 @@ class App:
         glfw.terminate()
 
     
-def run(frame_ui, callback=None, title="New app", width=800, height=600, theme="dark"):
+def run(
+        frame_ui,
+        callback=None,
+        title="New app",
+        width=800,
+        height=600,
+        theme="dark",
+        custom_font=False,
+        font_size=14,
+        cyrillic_ranges=True
+    ):
     """A minimalistic, easy-to-use function for creating and running an app"""
+
     app = App(title, width, height)
+
+    if custom_font == True:
+        app.load_font(font_size=font_size, cyrillic_ranges=cyrillic_ranges)
+    elif type(custom_font) == str:
+        app.load_font(font_path=custom_font, font_size=font_size, cyrillic_ranges=cyrillic_ranges)
+
     app.apply_theme(theme)
     app.run(frame_ui, callback)
