@@ -9,7 +9,7 @@ def gui():
 
    _, name = imgui.input_text("Enter your name", name)
 
-   imgui.text(f"Hello, {name if len(name) > 0 else "Unknown"}!")
+   imgui.text(f"Hello, {name if name else "Unknown"}!")
 
 
 app.run(gui)

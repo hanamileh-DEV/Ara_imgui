@@ -19,7 +19,7 @@ pip install ara_imgui
 Or install dependencies manually:
 
 ```bash
-pip install glfw PyOpenGL imgui
+pip install glfw PyOpenGL imgui ara_core
 ```
 
 > ⚠️ Make sure you have Python 3.7+ and OpenGL support (e.g., via GPU drivers on Windows).
@@ -107,6 +107,7 @@ See the [`examples/`](./examples) folder:
 
 ## Dependencies
 
+* `ara_core`
 * `imgui`
 * `glfw`
 * `PyOpenGL`

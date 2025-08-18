@@ -1,61 +1,48 @@
 import os
 import sys
 from pathlib import Path
-import inspect
-import glfw
 import imgui
 from imgui.integrations.glfw import GlfwRenderer  # GLFW integration for ImGui
+from ara_core import App as AppCore
 from .window import Window
 
-class App:
-    """
-    A class representing an ImGui application.
-
-    Attributes:
-        title (str): The title of the application window.
-        width (int): The width of the application window.
-        height (int): The height of the application window.
-        window (GLFWwindow): The GLFW window object.
-        renderer (GlfwRenderer): The ImGui GLFW renderer.
-        windows (set): A set of Window instances.
-    """
-    def __init__(self, title="New app", width=800, height=600):
-        """
-        Initializes the App instance.
-
-        Args:
-            title (str, optional): The title of the application window. Defaults to "New app".
-            width (int, optional): The width of the application window. Defaults to 800.
-            height (int, optional): The height of the application window. Defaults to 600.
-        """
-        # Initialize GLFW
-        if not glfw.init():
-            raise Exception("Failed to initialize GLFW")
-        
-        # Set window properties
-        self.title = title
-        self.width = width
-        self.height = height
-        
-        # Create GLFW window
-        self.window = glfw.create_window(width, height, title, None, None)
-
-        if not self.window:
-            glfw.terminate()
-            raise Exception("Failed to create GLFW window")
-        
-        # Set up OpenGL context and vsync
-        glfw.make_context_current(self.window)
-        glfw.swap_interval(1)  # Enable vsync
-        
+class AraImgui:
+    def __init__(self, core):
+        self.core = core
+        core.add_module(self)
+    
+    
+    def init(self):
         # Initialize ImGui context and GLFW renderer
         imgui.create_context()
-        self.renderer = GlfwRenderer(self.window)
+        self.renderer = GlfwRenderer(self.core.window)
         
-        # ImGui windows
+        # ImGui windows set
         self.windows = set()
-
     
+    
+    def process_input(self):
+        self.renderer.process_inputs()
+        
+        # Start new ImGui frame
+        imgui.new_frame()
+        
+        
+    def render(self):
+        pass
+        
+        
+    def update(self):
+        # End ImGui frame
+        imgui.render()
+        self.renderer.render(imgui.get_draw_data())
+        
+        
+    def terminate(self):
+        self.renderer.shutdown()
+        
+        
+    # -------- ImGUI management --------
     def load_font(self, font_path=None, font_size=14, cyrillic_ranges=True):
         """
         Loads a font for the application.
@@ -91,8 +78,8 @@ class App:
         io.fonts.clear()
         io.fonts.add_font_from_file_ttf(str(font_path), font_size, None, glyph_ranges)
         self.renderer.refresh_font_texture()
-
-
+        
+        
     def apply_theme(self, name: str):
         """
         Applies a theme to the application.
@@ -126,27 +113,68 @@ class App:
             return False
 
 
-    def run(self, frame_ui = None, callback = None):
+
+class App(AppCore):
+    def __init__(self, title="New app", width=800, height=600, log_level="warning"):
+        """Initialize the application.
+        
+        Args:
+            title (str): Window title.
+            width (int): Window width.
+            height (int): Window height.
+            log_level (str): Logging level, default is "warning".
         """
-        Executes the main application loop.
+        super().__init__(title, width, height, log_level)
+        self.ara_imgui = AraImgui(self)
+    
+    
+    def load_font(self, font_path=None, font_size=14, cyrillic_ranges=True):
+        """
+        Loads a font for the application.
 
         Args:
-            frame_ui (function, optional): The function to draw the main UI. Defaults to None.
-            callback (function, optional): The function to call after drawing the UI. Defaults to None.
+            font_path (str, optional): The path to the font file. Defaults to None, which loads the default font.
+            font_size (int, optional): The size of the font. Defaults to 14.
+            cyrillic_ranges (bool, optional): Whether to include Cyrillic character ranges. Defaults to True.
         """
+        
+        self.ara_imgui.load_font(font_path, font_size, cyrillic_ranges)
+        
 
-        while not glfw.window_should_close(self.window):
-            # Process events and inputs
-            glfw.poll_events()
-            self.renderer.process_inputs()
-            
-            # Start new ImGui frame
-            imgui.new_frame()
+    def apply_theme(self, name: str):
+        """
+        Applies a theme to the application.
 
-            # Get current window size
-            self.width, self.height = glfw.get_framebuffer_size(self.window)
+        Args:
+            name (str): The name of the theme ("dark" or "light").
+        """
+        self.ara_imgui.apply_theme(name)
+        
 
-            # Set up fullscreen window for ImGui main window
+    def add_window(self, window: Window):
+        """
+        Adds a window to the application.
+
+        Args:
+            window (Window): The Window instance to add.
+
+        Returns:
+            bool: True if the window was added, False if it was already present.
+        """
+        return self.ara_imgui.add_window(window)
+
+
+    def run(self, frame_ui=None, callback=None, terminate=None):
+        """Run the main application loop.
+        
+        Args:
+            frame_ui: Optional UI rendering callback.
+            callback: Optional per-frame callback.
+            terminate: Optional cleanup callback.
+        """
+        
+        def imgui_ui():
+            # Set window size and position
             imgui.set_next_window_position(0, 0)
             imgui.set_next_window_size(self.width, self.height)
             imgui.begin(
@@ -156,43 +184,24 @@ class App:
                       imgui.WINDOW_NO_BRING_TO_FRONT_ON_FOCUS
             )
             
-            # Call UI rendering callback if set
-            if frame_ui:
-                sig = inspect.signature(frame_ui)
-                if len(sig.parameters) == 0:
-                    frame_ui()
-                elif len(sig.parameters) == 1:
-                    frame_ui(self)
-                else:
-                    raise TypeError(f"frame_ui function must take 0 or 1 arguments, but {len(sig.parameters)} were given")
+            # Rendering
+            frame_ui()
             
             imgui.end()
-
+            
             # Drawing ImGui windows
-            self.windows = set([window for window in self.windows if not window.should_close])
+            self.ara_imgui.windows = set([window for window in self.ara_imgui.windows if not window.should_close])
 
-            for window in self.windows:
+            for window in self.ara_imgui.windows:
                 window.draw()
-
-            # Call frame update callback if set
-            if callback:
-                sig = inspect.signature(callback)
-                if len(sig.parameters) == 0:
-                    callback()
-                elif len(sig.parameters) == 1:
-                    callback(self)
-                else:
-                    raise TypeError(f"callback function must take 0 or 1 arguments, but {len(sig.parameters)} were given")
-
-            # Render ImGui and swap buffers
+                
+            # End ImGui frame
             imgui.render()
-            self.renderer.render(imgui.get_draw_data())
-            glfw.swap_buffers(self.window)
+            self.ara_imgui.renderer.render(imgui.get_draw_data())
+            
 
-        # Cleanup on exit
-        self.renderer.shutdown()
-        glfw.terminate()
-
+        super().run(imgui_ui, callback, terminate)
+            
     
 def run(
         frame_ui,

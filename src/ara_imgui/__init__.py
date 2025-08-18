@@ -1,5 +1,5 @@
 import imgui
-from .app import App, run
+from .app import App, AraImgui, run
 from .window import Window
 
-__all__ = ['App', 'run', 'Window', 'imgui']
+__all__ = ['App', 'run', 'Window', 'AraImgui', 'imgui']

@@ -1,6 +1,6 @@
 [project]
 name = "Ara_imgui"
-version = "1.0.0"
+version = "1.1.0"
 description = "A simplified wrapper for Dear ImGui and GLFW"
 readme = "README.md"
 authors = [{ name = "HanamileH", email = "hanamileh@gmail.com" }]
