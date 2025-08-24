@@ -1,12 +1,26 @@
 import os
 import sys
 from pathlib import Path
+import glfw
 import imgui
 from imgui.integrations.glfw import GlfwRenderer  # GLFW integration for ImGui
 from ara_core import App as AppCore
 from .window import Window
 
 class AraImgui:
+    NAME="ara_imgui"
+    DEPENDENCIES = {
+        "new_frame": {
+            "before": ["core.render", "core.update"],
+            "after": []
+        },
+        "finish_frame": {
+            "before": [],
+            "after": ["core.render"]
+        }
+    }
+    
+    
     def __init__(self, core):
         self.core = core
         core.add_module(self)
@@ -15,34 +29,60 @@ class AraImgui:
     def init(self):
         # Initialize ImGui context and GLFW renderer
         imgui.create_context()
-        self.renderer = GlfwRenderer(self.core.window)
+        self.renderer = GlfwRenderer(self.core.window, attach_callbacks=False)
         
         # ImGui windows set
         self.windows = set()
+        
+        # Changing GLFW custom callbacks
+        glfw.set_key_callback(self.core.window, self._key_callback)
+        glfw.set_char_callback(self.core.window, self._char_callback)
+        glfw.set_scroll_callback(self.core.window, self._scroll_callback)
     
     
-    def process_input(self):
-        self.renderer.process_inputs()
+    def _key_callback(self, window, key, scancode, action, mods):
+        io = imgui.get_io()
         
-        # Start new ImGui frame
-        imgui.new_frame()
+        if io.want_capture_keyboard:
+            self.renderer.keyboard_callback(window, key, scancode, action, mods)
         
+        self.core._key_callback(window, key, scancode, action, mods)
         
-    def render(self):
-        pass
-        
-        
-    def update(self):
-        # End ImGui frame
-        imgui.render()
-        self.renderer.render(imgui.get_draw_data())
-        
-        
+    
+    def _char_callback(self, window, char):
+        io = imgui.get_io()
+
+        if io.want_capture_keyboard:
+            self.renderer.char_callback(window, char)
+            
+        # (Core doesn't have custom char callback)
+
+
+    def _scroll_callback(self, window, xpos, ypos):
+        io = imgui.get_io()
+
+        if io.want_capture_mouse:
+            self.renderer.scroll_callback(window, xpos, ypos)
+
+        self.core._scroll_callback(window, xpos, ypos)
+
+    
     def terminate(self):
         self.renderer.shutdown()
         
         
-    # -------- ImGUI management --------
+    # ========= Mode callbacks =========
+    def new_frame(self):
+        self.renderer.process_inputs()
+        imgui.new_frame()
+        
+        
+    def finish_frame(self):
+        imgui.render()
+        self.renderer.render(imgui.get_draw_data())
+    
+        
+    # ========= ImGUI utitities =========
     def load_font(self, font_path=None, font_size=14, cyrillic_ranges=True):
         """
         Loads a font for the application.
@@ -113,8 +153,7 @@ class AraImgui:
             return False
 
 
-
-class App(AppCore):
+class App():
     def __init__(self, title="New app", width=800, height=600, log_level="warning"):
         """Initialize the application.
         
@@ -124,8 +163,13 @@ class App(AppCore):
             height (int): Window height.
             log_level (str): Logging level, default is "warning".
         """
-        super().__init__(title, width, height, log_level)
-        self.ara_imgui = AraImgui(self)
+        core = AppCore(title, width, height, log_level)
+        
+        self.core = core
+        self.ara_imgui = AraImgui(core)
+        
+        # core.add_module(self.ara_imgui)
+        
     
     
     def load_font(self, font_path=None, font_size=14, cyrillic_ranges=True):
@@ -164,28 +208,28 @@ class App(AppCore):
         return self.ara_imgui.add_window(window)
 
 
-    def run(self, frame_ui=None, callback=None, terminate=None):
-        """Run the main application loop.
+    def run(self, render=None, update=None, terminate=None):
+        """Run main loop with dependency-resolved callbacks
         
         Args:
-            frame_ui: Optional UI rendering callback.
-            callback: Optional per-frame callback.
-            terminate: Optional cleanup callback.
+            render (function, optional): Render callback. Defaults to None.
+            update (function, optional): Update callback. Defaults to None.
+            terminate (function, optional): Terminate callback. Defaults to None.
         """
-        
-        def imgui_ui():
+            
+        def imgui_render():
             # Set window size and position
             imgui.set_next_window_position(0, 0)
-            imgui.set_next_window_size(self.width, self.height)
+            imgui.set_next_window_size(self.core.width, self.core.height)
             imgui.begin(
-                f"##{self.title}", 
+                f"##{self.core.title}", 
                 flags=imgui.WINDOW_NO_DECORATION | 
                       imgui.WINDOW_NO_MOVE | 
                       imgui.WINDOW_NO_BRING_TO_FRONT_ON_FOCUS
             )
             
             # Rendering
-            frame_ui()
+            render()
             
             imgui.end()
             
@@ -200,41 +244,4 @@ class App(AppCore):
             self.ara_imgui.renderer.render(imgui.get_draw_data())
             
 
-        super().run(imgui_ui, callback, terminate)
-            
-    
-def run(
-        frame_ui,
-        callback=None,
-        title="New app",
-        width=800,
-        height=600,
-        theme="dark",
-        custom_font=False,
-        font_size=14,
-        cyrillic_ranges=True
-    ):
-    """
-    A minimalistic, easy-to-use function for creating and running an app.
-
-    Args:
-        frame_ui (function): The function to draw the main UI.
-        callback (function, optional): The function to call after drawing the UI. Defaults to None.
-        title (str, optional): The title of the application window. Defaults to "New app".
-        width (int, optional): The width of the application window. Defaults to 800.
-        height (int, optional): The height of the application window. Defaults to 600.
-        theme (str, optional): The name of the theme ("dark" or "light"). Defaults to "dark".
-        custom_font (bool or str, optional): The path to a custom font or True to use the default font or False to use build-in ImGui font. Defaults to False.
-        font_size (int, optional): The size of the font. Defaults to 14.
-        cyrillic_ranges (bool, optional): Whether to include Cyrillic character ranges. Defaults to True.
-    """
-
-    app = App(title, width, height)
-
-    if custom_font == True:
-        app.load_font(font_size=font_size, cyrillic_ranges=cyrillic_ranges)
-    elif type(custom_font) == str:
-        app.load_font(font_path=custom_font, font_size=font_size, cyrillic_ranges=cyrillic_ranges)
-
-    app.apply_theme(theme)
-    app.run(frame_ui, callback)
+        self.core.run(imgui_render, update, terminate)

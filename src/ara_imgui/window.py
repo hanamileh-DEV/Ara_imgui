@@ -8,7 +8,7 @@ class Window:
     Attributes:
         name (str): The title of the window.
         flags (int): The flags for the window.
-        frame_ui (function): The function to draw the window's content.
+        render (function): The function to draw the window's content.
         should_close (bool): A flag indicating if the window should be closed.
         _internal_id (int): The unique ID for the window.
         next_size (tuple, None): The next size of the window.
@@ -25,21 +25,21 @@ class Window:
         """
         self.name = title
         self.flags = flags
-        self.frame_ui = frame_ui
+        self.render = frame_ui
         self.should_close = False
         self._internal_id = id(self)
         self.next_size = None
         self.next_pos = None
 
     
-    def set_frame_ui(self, frame_ui):
+    def set_render(self, render):
         """
         Sets the frame UI function for the window.
 
         Args:
-            frame_ui (function): The function to draw the window's content.
+            render (function): The function to draw the window's content.
         """
-        self.frame_ui = frame_ui
+        self.render = render
     
 
     def set_size(self, width: int, height: int):
@@ -83,12 +83,12 @@ class Window:
 
         self.should_close = not is_opened
 
-        if self.frame_ui is not None:
-            sig = inspect.signature(self.frame_ui)
+        if self.render is not None:
+            sig = inspect.signature(self.render)
             if len(sig.parameters) == 0:
-                self.frame_ui()
+                self.render()
             elif len(sig.parameters) == 1:
-                self.frame_ui(self)
+                self.render(self)
             else:
                 raise TypeError(f"frame_ui function must take 0 or 1 arguments, but {len(sig.parameters)} were given")
 

@@ -31,12 +31,15 @@ pip install glfw PyOpenGL imgui ara_core
 ```python
 from ara_imgui import run, imgui
 
+app = App("Hello world example")
+
 def gui():
     imgui.text("Hello, world!")
     if imgui.button("Click me"):
         print("Clicked!")
 
-run(gui)
+app.run(gui)
+
 ```
 
 ### Multiple windows
@@ -46,17 +49,17 @@ from ara_imgui import App, Window, imgui
 
 app = App("Multi-window App")
 
-def win_ui():
+def win_gui():
     imgui.text("This is another window")
 
-win = Window("Extra Window", frame_ui=win_ui)
+win = Window("Extra Window", frame_ui=win_gui)
 
-def main_ui():
+def gui():
     imgui.text("Main Window")  
     if imgui.button("Open Extra Window"):
         app.add_window(win)
 
-app.run(main_ui)
+app.run(gui)
 ```
 
 ### Custom fonts and themes
@@ -74,24 +77,7 @@ def gui():
 app.run(gui)
 ```
 
-## API
-
-### `run(frame_ui, **kwargs)`
-
-Minimal interface to launch the application.
-
-Parameters:
-
-* `frame_ui`: Function to render the main UI.
-* `callback`: Function called after `frame_ui` (optional).
-* `title`: Window title.
-* `width`, `height`: Window size.
-* `theme`: `"dark"` or `"light"`.
-* `custom_font`: `False`, `True`, or path to a `.ttf` file.
-* `font_size`: Font size.
-* `cyrillic_ranges`: Include Cyrillic character ranges (`True` by default).
-
-### Classes
+## Classes
 
 * `App` — The main application class.
 * `Window` — Represents a separate ImGui window with its own logic.

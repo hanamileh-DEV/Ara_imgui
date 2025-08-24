@@ -1,4 +1,6 @@
-from ara_imgui import run, imgui
+from ara_imgui import App, imgui
+
+app = App("Hello world example")
 
 def gui():
    imgui.text("Hello, world!")
@@ -6,4 +8,4 @@ def gui():
    if imgui.button("Click me"):
       print("Clicked!")
 
-run(gui)
+app.run(gui)
